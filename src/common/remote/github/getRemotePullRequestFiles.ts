@@ -1,9 +1,9 @@
-import type { ReviewFile } from '../../types';
-import { GitHubRESTClient } from './GitHubRESTClient';
-import { extractPullRequestIdentifier } from './extractPullRequestIdentifier';
+import type { ReviewFile } from "../../types";
+import { GitHubRESTClient } from "./GitHubRESTClient";
+import { extractPullRequestIdentifier } from "./extractPullRequestIdentifier";
 
 export const getRemotePullRequestFiles = async (
-  remotePullRequest: string
+  remotePullRequest: string,
 ): Promise<ReviewFile[]> => {
   const pullRequestIdentifier = extractPullRequestIdentifier(remotePullRequest);
   const restClient = new GitHubRESTClient();
@@ -13,6 +13,10 @@ export const getRemotePullRequestFiles = async (
 
     return files;
   } catch (error) {
-    throw new Error(`Failed to get remote Pull Request files: ${JSON.stringify(error)}`);
+    throw new Error(
+      `Failed to get remote Pull Request files: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
 };

@@ -1,9 +1,9 @@
-import { context, getOctokit } from '@actions/github';
-import type { GitHub } from '@actions/github/lib/utils';
-import { getGitHubEnvVariables } from '../../config';
-import { formatReview } from '../../review/llm/generateMarkdownReport';
-import type { CreateFileCommentData } from '../types';
-import { logger } from '../utils/logger';
+import { context, getOctokit } from "@actions/github";
+import type { GitHub } from "@actions/github/lib/utils";
+import { getGitHubEnvVariables } from "../../config";
+import { formatReview } from "../../review/llm/generateMarkdownReport";
+import type { CreateFileCommentData } from "../types";
+import { logger } from "../utils/logger";
 
 export const getRelativePath = (fileName: string, repoName: string): string => {
   const repoIndex = fileName.lastIndexOf(repoName);
@@ -18,7 +18,7 @@ export const getRelativePath = (fileName: string, repoName: string): string => {
 export const getToken = (): string => {
   const { githubToken } = getGitHubEnvVariables();
   if (!githubToken) {
-    throw new Error('GITHUB_TOKEN is not set');
+    throw new Error("GITHUB_TOKEN is not set");
   }
 
   return githubToken;
@@ -36,7 +36,7 @@ export const getOctokitRepoDetails = (): OctokitType | undefined => {
   const { payload, issue } = context;
 
   if (!payload.pull_request) {
-    logger.warn('Not a pull request. Skipping commenting on PR...');
+    logger.warn("Not a pull request. Skipping commenting on PR...");
 
     return undefined;
   }
@@ -48,7 +48,7 @@ export const getOctokitRepoDetails = (): OctokitType | undefined => {
 
 export const commentOnFile = async (
   octokit: InstanceType<typeof GitHub>,
-  data: CreateFileCommentData
+  data: CreateFileCommentData,
 ): Promise<void> => {
   try {
     const botCommentBody = `${formatReview(data.feedback.review)}\n\n---\n\n${data.signOff}`;
@@ -62,7 +62,7 @@ export const commentOnFile = async (
     // Check if bot has already commented on this file
     const relativePath = getRelativePath(data.feedback.fileName, data.repo);
     const botComment = comments.find(
-      (comment) => comment.path === relativePath && comment.body.includes(data.signOff)
+      (comment) => comment.path === relativePath && comment.body.includes(data.signOff),
     );
 
     if (botComment) {
@@ -80,14 +80,14 @@ export const commentOnFile = async (
         body: botCommentBody,
         commit_id: data.commit_id,
         path: relativePath,
-        subject_type: 'FILE',
+        subject_type: "FILE",
       });
     }
   } catch (error) {
     logger.error(
-      `Failed to comment on PR for feedback: ${
-        data.feedback.review
-      }. Error: ${JSON.stringify(error)}`
+      `Failed to comment on PR for feedback: ${data.feedback.review}. Error: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
   }
 };
